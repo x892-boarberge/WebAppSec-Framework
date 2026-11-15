@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WebAppSec Framework — Vulnerability Register</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1f2937; --muted: #6b7280; --border: #e5e7eb;
+    --low: #10b981; --medium: #f59e0b; --high: #ef4444; --critical: #7c2d12;
+    --accent: #2563eb; --surface: #f9fafb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0; background: var(--bg); color: var(--fg); line-height: 1.55;
+  }
+  header {
+    background: var(--accent); color: white; padding: 1.25rem 2rem;
+  }
+  header h1 { margin: 0 0 .25rem 0; font-size: 1.4rem; }
+  header p { margin: 0; opacity: .9; font-size: .875rem; }
+  .banner {
+    background: #fef3c7; color: #78350f; padding: .6rem 2rem;
+    font-size: .85rem; border-bottom: 1px solid #fcd34d;
+  }
+  nav {
+    display: flex; gap: 0; background: var(--surface);
+    border-bottom: 1px solid var(--border); padding: 0 2rem;
+    overflow-x: auto;
+  }
+  nav a {
+    padding: .9rem 1rem; color: var(--muted); text-decoration: none;
+    font-size: .9rem; border-bottom: 2px solid transparent; white-space: nowrap;
+  }
+  nav a:hover { color: var(--accent); }
+  nav a.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+  h2 { margin-top: 0; font-size: 1.35rem; }
+  h3 { font-size: 1.05rem; margin-top: 1.75rem; }
+  .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .card {
+    border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem;
+    background: var(--surface);
+  }
+  .card .num { font-size: 2rem; font-weight: 700; margin: 0; }
+  .card .label { color: var(--muted); font-size: .875rem; margin: 0; }
+  .band-low { color: var(--low); }
+  .band-medium { color: var(--medium); }
+  .band-high { color: var(--high); }
+  .band-critical { color: var(--critical); }
+  .controls { display: flex; gap: .75rem; margin: 1.5rem 0; flex-wrap: wrap; }
+  input[type=search], select {
+    padding: .55rem .75rem; border: 1px solid var(--border); border-radius: 6px;
+    font-size: .9rem; font-family: inherit;
+  }
+  input[type=search] { flex: 1; min-width: 220px; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: left; padding: .65rem .5rem; border-bottom: 1px solid var(--border); }
+  th { font-weight: 600; color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; }
+  tr.clickable { cursor: pointer; }
+  tr.clickable:hover { background: var(--surface); }
+  .pill {
+    display: inline-block; padding: .15rem .55rem; border-radius: 999px;
+    font-size: .75rem; font-weight: 600; color: white;
+  }
+  .pill.low { background: var(--low); }
+  .pill.medium { background: var(--medium); }
+  .pill.high { background: var(--high); }
+  .pill.critical { background: var(--critical); }
+  .empty { color: var(--muted); padding: 2rem; text-align: center; font-style: italic; }
+  .detail-section { margin-bottom: 1.75rem; }
+  .detail-section h3 { margin-bottom: .5rem; border-bottom: 1px solid var(--border); padding-bottom: .25rem; }
+  .field { margin-bottom: .9rem; }
+  .field-label { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; margin-bottom: .2rem; }
+  .layer { margin-bottom: 1rem; padding: .85rem; background: var(--surface); border-radius: 6px; border-left: 3px solid var(--accent); }
+  .layer h4 { margin: 0 0 .4rem 0; font-size: .9rem; }
+  .layer ul { margin: .25rem 0; padding-left: 1.2rem; }
+  .layer li { font-size: .9rem; margin-bottom: .25rem; }
+  .cia-row { display: flex; gap: 1rem; margin-bottom: .5rem; font-size: .9rem; flex-wrap: wrap; }
+  .cia-property { font-weight: 600; min-width: 130px; }
+  .back { display: inline-block; margin-bottom: 1rem; color: var(--accent); text-decoration: none; font-size: .9rem; }
+  .back:hover { text-decoration: underline; }
+  .assumption { background: #fef2f2; border-left: 3px solid var(--high); padding: .75rem; font-size: .85rem; border-radius: 4px; }
+  footer { text-align: center; padding: 2rem; color: var(--muted); font-size: .8rem; }
+  @media (max-width: 600px) {
+    header, .banner, nav, main { padding-left: 1rem; padding-right: 1rem; }
+    .card .num { font-size: 1.5rem; }
+    th, td { font-size: .8rem; padding: .5rem .25rem; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>WebAppSec Framework</h1>
+  <p>An Evidence-Based, Risk-Prioritised Web Application Security Improvement Framework</p>
+</header>
+<div class="banner">
+  Academic demonstration artefact — not a scanner, not a penetration-testing tool, and not a commercial security product.
+</div>
+<nav>
+  <a href="#dashboard" data-view="dashboard">Dashboard</a>
+  <a href="#register" data-view="register">Register</a>
+  <a href="#framework" data-view="framework">Framework</a>
+  <a href="#limitations" data-view="limitations">Limitations</a>
+</nav>
+<main id="app">
+  <div class="empty">Loading vulnerability register…</div>
+</main>
+<footer>
+  <p>Register v1.0 · Framework v1.0 · <span id="meta-editions"></span></p>
+  <p>Sources: OWASP Top 10, OWASP ASVS, OWASP WSTG, NIST CSF 2.0, MITRE CWE, FIRST CVSS.</p>
+</footer>
+
+<script>
+let DATA = null;
+
+async function loadData() {
+  try {
+    const r = await fetch('../data/vulnerabilities.json');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    DATA = await r.json();
+    document.getElementById('meta-editions').textContent =
+      `${DATA.meta.owasp_top10_edition} · ASVS ${DATA.meta.asvs_version} · WSTG ${DATA.meta.wstg_version}`;
+    render();
+  } catch (e) {
+    document.getElementById('app').innerHTML =
+      `<div class="empty">Could not load data/vulnerabilities.json (${e.message}).<br><br>
+       Serve this folder via HTTP: <code>python3 -m http.server 8000</code> from the project root,
+       then open <code>http://localhost:8000/prototype/index.html</code>.</div>`;
+  }
+}
+
+function route() {
+  const hash = (location.hash || '#dashboard').slice(1);
+  if (hash.startsWith('detail/')) return renderDetail(hash.slice(7));
+  return render(hash);
+}
+
+function setActive(view) {
+  document.querySelectorAll('nav a').forEach(a => {
+    a.classList.toggle('active', a.dataset.view === view ||
+      (view === 'detail' && a.dataset.view === 'register'));
+  });
+}
+
+function render(view) {
+  if (!DATA) return;
+  setActive(view);
+  const app = document.getElementById('app');
+  if (view === 'register') return renderRegister();
+  if (view === 'framework') return renderFramework();
+  if (view === 'limitations') return renderLimitations();
+  return renderDashboard();
+}
+
+function renderDashboard() {
+  const vulns = DATA.vulnerabilities;
+  const bands = { Low: 0, Medium: 0, High: 0, Critical: 0 };
+  const cats = {};
+  vulns.forEach(v => {
+    bands[v.risk.band]++;
+    const cat = v.owasp_category.split(' ')[0];
+    cats[cat] = (cats[cat] || 0) + 1;
+  });
+  document.getElementById('app').innerHTML = `
+    <h2>Dashboard</h2>
+    <p>${vulns.length} vulnerabilities in the register.</p>
+    <div class="grid">
+      <div class="card"><p class="num">${vulns.length}</p><p class="label">Total vulnerabilities</p></div>
+      <div class="card"><p class="num band-critical">${bands.Critical}</p><p class="label">Critical</p></div>
+      <div class="card"><p class="num band-high">${bands.High}</p><p class="label">High</p></div>
+      <div class="card"><p class="num band-medium">${bands.Medium}</p><p class="label">Medium</p></div>
+      <div class="card"><p class="num band-low">${bands.Low}</p><p class="label">Low</p></div>
+    </div>
+    <h3>Distribution by OWASP category</h3>
+    <table>
+      <thead><tr><th>Category</th><th>Count</th></tr></thead>
+      <tbody>
+        ${Object.entries(cats).sort().map(([c,n]) => `<tr><td>${c}</td><td>${n}</td></tr>`).join('')}
+      </tbody>
+    </table>
+    <h3>All entries by risk score</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Vulnerability</th><th>Score</th><th>Band</th></tr></thead>
+      <tbody>
+        ${vulns.slice().sort((a,b)=>b.risk.score-a.risk.score).map(v =>
+          `<tr class="clickable" onclick="location.hash='detail/${v.id}'">
+             <td>${v.id}</td><td>${v.name}</td><td>${v.risk.score}</td>
+             <td><span class="pill ${v.risk.band.toLowerCase()}">${v.risk.band}</span></td>
+           </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function renderRegister() {
+  document.getElementById('app').innerHTML = `
+    <h2>Vulnerability Register</h2>
+    <div class="controls">
+      <input type="search" id="search" placeholder="Search by name, description, cause or CWE…">
+      <select id="band-filter">
+        <option value="">All bands</option>
+        <option>Low</option><option>Medium</option><option>High</option><option>Critical</option>
+      </select>
+    </div>
+    <div id="register-results"></div>`;
+  document.getElementById('search').addEventListener('input', filterRegister);
+  document.getElementById('band-filter').addEventListener('change', filterRegister);
+  filterRegister();
+}
+
+function filterRegister() {
+  const q = (document.getElementById('search')?.value || '').toLowerCase().trim();
+  const band = document.getElementById('band-filter')?.value || '';
+  let list = DATA.vulnerabilities;
+  if (band) list = list.filter(v => v.risk.band === band);
+  if (q) list = list.filter(v => [v.id, v.name, v.description, v.cause, v.cwe, v.owasp_category].join(' ').toLowerCase().includes(q));
+  const container = document.getElementById('register-results');
+  if (!list.length) {
+    container.innerHTML = `<div class="empty">No entries match your search or filter.</div>`;
+    return;
+  }
+  container.innerHTML = `
+    <p style="color:var(--muted);font-size:.85rem;">Showing ${list.length} of ${DATA.vulnerabilities.length}</p>
+    <table>
+      <thead><tr><th>ID</th><th>Name</th><th>OWASP</th><th>CWE</th><th>Score</th><th>Band</th></tr></thead>
+      <tbody>
+        ${list.map(v => `<tr class="clickable" onclick="location.hash='detail/${v.id}'">
+          <td>${v.id}</td><td>${v.name}</td><td>${v.owasp_category}</td><td>${v.cwe}</td>
+          <td>${v.risk.score}</td>
+          <td><span class="pill ${v.risk.band.toLowerCase()}">${v.risk.band}</span></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function renderDetail(id) {
+  if (!DATA) return;
+  setActive('detail');
+  const v = DATA.vulnerabilities.find(x => x.id === id);
+  if (!v) {
+    document.getElementById('app').innerHTML = `<div class="empty">Entry ${id} not found.</div>`;
+    return;
+  }
+  const c = v.cia, ctl = v.controls;
+  document.getElementById('app').innerHTML = `
+    <a class="back" href="#register">← Back to register</a>
+    <h2>${v.id} — ${v.name}</h2>
+    <p>
+      <strong>${v.owasp_category}</strong> · <strong>${v.cwe}</strong> — ${v.cwe_name}
+      <br><span style="color:var(--muted);font-size:.85rem;">${v.classification_note || ''}</span>
+    </p>
+
+    <div class="detail-section">
+      <h3>Description</h3>
+      <p>${v.description}</p>
+      <div class="field"><div class="field-label">Underlying cause</div><p>${v.cause}</p></div>
+      <div class="field"><div class="field-label">Attack scenario</div><p>${v.attack_scenario}</p></div>
+    </div>
+
+    <div class="detail-section">
+      <h3>CIA Impact</h3>
+      ${['confidentiality','integrity','availability'].map(k => `
+        <div class="cia-row">
+          <span class="cia-property">${k[0].toUpperCase()+k.slice(1)}: ${c[k].level}</span>
+          <span>${c[k].rationale}</span>
+        </div>`).join('')}
+    </div>
+
+    <div class="detail-section">
+      <h3>Risk Assessment</h3>
+      <div class="field"><div class="field-label">Likelihood: ${v.likelihood.score} / 5</div><p>${v.likelihood.justification}</p></div>
+      <div class="field"><div class="field-label">Impact: ${v.impact.score} / 5</div><p>${v.impact.justification}</p></div>
+      <p style="font-size:1.1rem;">
+        <strong>Score: ${v.risk.score}</strong> ·
+        <span class="pill ${v.risk.band.toLowerCase()}">${v.risk.band}</span>
+      </p>
+    </div>
+
+    <div class="detail-section">
+      <h3>Four-Layer Controls</h3>
+      ${layerBlock('Prevent — how do we stop it?', ctl.prevent)}
+      ${layerBlock('Detect — how do we know?', ctl.detect, ctl.detect_note)}
+      ${layerBlock('Respond — what when found?', ctl.respond)}
+      ${layerBlock('Verify — what proves the control?', ctl.verify)}
+    </div>
+
+    <div class="detail-section">
+      <h3>Evidence</h3>
+      <ul>
+        ${v.evidence.map(e => `<li><strong>[${e.type}]</strong> ${e.source} <em>(${e.ref})</em></li>`).join('')}
+      </ul>
+    </div>
+
+    <div class="detail-section">
+      <h3>Assumptions</h3>
+      <div class="assumption">${v.assumptions}</div>
+    </div>`;
+}
+
+function layerBlock(title, items, note) {
+  const list = (items || []).map(i => {
+    const text = typeof i === 'string' ? i : `${i.ref ? `<strong>${i.ref}</strong> — ` : ''}${i.label || ''}${i.chapter ? `<strong>${i.chapter}</strong> — ` : ''}${i.requirement || ''}`;
+    return `<li>${text}</li>`;
+  }).join('');
+  return `
+    <div class="layer">
+      <h4>${title}</h4>
+      <ul>${list || '<li><em>None</em></li>'}</ul>
+      ${note ? `<p style="font-size:.85rem;color:var(--muted);margin:.5rem 0 0 0;"><em>${note}</em></p>` : ''}
+    </div>`;
+}
+
+function renderFramework() {
+  document.getElementById('app').innerHTML = `
+    <h2>The Four-Layer Framework</h2>
+    <p>The project's organising structure. It draws on NIST CSF 2.0 functions (Protect, Detect, Respond)
+    and the OWASP ASVS verification concept, but it is not an official standard from either body.</p>
+    <table>
+      <thead><tr><th>Layer</th><th>Question</th><th>Source family</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Prevent</strong></td><td>How do we stop it?</td><td>OWASP Cheat Sheet Series</td></tr>
+        <tr><td><strong>Detect</strong></td><td>How do we know it happened?</td><td>OWASP WSTG (or explicit stated gap)</td></tr>
+        <tr><td><strong>Respond</strong></td><td>What do we do when it is found?</td><td>NIST Cybersecurity Framework 2.0</td></tr>
+        <tr><td><strong>Verify</strong></td><td>What requirement proves the control exists?</td><td>OWASP ASVS</td></tr>
+      </tbody>
+    </table>
+    <h3>Why four layers, not one</h3>
+    <p>A list of fixes tells an organisation what to do. A framework tells an organisation what to do,
+    how to know whether it is done, what to do when it fails, and which requirement proves compliance.
+    The four-layer model exists because remediation is not complete until all four are answered.</p>
+    <h3>Coverage gaps</h3>
+    <p>Two entries — V10 (Vulnerable Components) and V11 (Logging) — have no direct WSTG test.
+    Detection for these depends on tooling rather than manual procedure. This is stated in each entry
+    rather than concealed.</p>`;
+}
+
+function renderLimitations() {
+  document.getElementById('app').innerHTML = `
+    <h2>Limitations and Assumptions</h2>
+    <h3>What this prototype is</h3>
+    <p>An academic demonstration artefact presenting a structured security improvement framework
+    derived from published standards and evidence.</p>
+    <h3>What it is not</h3>
+    <ul>
+      <li>Not a vulnerability scanner</li>
+      <li>Not a penetration-testing tool</li>
+      <li>Not a commercial security product</li>
+      <li>Does not test any live system</li>
+    </ul>
+    <h3>Assumptions</h3>
+    <ul>
+      <li>12 vulnerabilities treated as representative of commonly encountered weaknesses</li>
+      <li>Generic application context assumed (public reachability, authenticated user population)</li>
+      <li>Likelihood and impact ratings are ordinal judgements, not measured probabilities</li>
+      <li>Each vulnerability assessed independently; interactions not modelled</li>
+    </ul>
+    <h3>Risk band scheme</h3>
+    <p>R = L × I, range 1–25. Only 14 scores are mathematically possible (1,2,3,4,5,6,8,9,10,12,15,16,20,25).
+    Bands: Low 1–4, Medium 5–9, High 10–16, Critical 20–25. These are the project's own scheme, not an
+    official NIST, OWASP or CVSS classification.</p>
+    <h3>Detect-layer gaps</h3>
+    <p>V10 and V11 have no direct WSTG test. Detection relies on SCA and SIEM tooling respectively.
+    These gaps are stated in the entries.</p>
+    <h3>Sources</h3>
+    <p>OWASP Top 10, OWASP ASVS, OWASP WSTG, OWASP Cheat Sheet Series, NIST SP 800-30 Rev.1,
+    NIST CSF 2.0, MITRE CWE, FIRST CVSS v4.0, plus academic literature.</p>`;
+}
+
+window.addEventListener('hashchange', route);
+window.addEventListener('DOMContentLoaded', () => { loadData().then(route); });
+</script>
+</body>
+</html>

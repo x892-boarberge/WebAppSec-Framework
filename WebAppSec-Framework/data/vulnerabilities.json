@@ -1,0 +1,1172 @@
+{
+    "meta":  {
+                 "framework_version":  "1.0",
+                 "schema_version":  "1.0",
+                 "owasp_top10_edition":  "2021 (VERIFY against owasp.org)",
+                 "asvs_version":  "5.0 (VERIFY against asvs.owasp.org)",
+                 "wstg_version":  "4.2 (VERIFY against owasp.org/wstg)",
+                 "accessed":  "2026-11-14",
+                 "risk_bands":  {
+                                    "low":  [
+                                                1,
+                                                4
+                                            ],
+                                    "medium":  [
+                                                   5,
+                                                   9
+                                               ],
+                                    "high":  [
+                                                 10,
+                                                 16
+                                             ],
+                                    "critical":  [
+                                                     20,
+                                                     25
+                                                 ]
+                                },
+                 "band_rationale":  "Only 14 products are possible on a 5x5 matrix (1,2,3,4,5,6,8,9,10,12,15,16,20,25). Bands chosen so every obtainable score falls in exactly one band and no boundary lands on an unobtainable value. Critical requires both dimensions \u003e=4."
+             },
+    "vulnerabilities":  [
+                            {
+                                "id":  "V01",
+                                "name":  "SQL Injection",
+                                "owasp_category":  "A03:2021 Injection",
+                                "cwe":  "CWE-89",
+                                "cwe_name":  "Improper Neutralization of Special Elements used in an SQL Command",
+                                "description":  "Untrusted input is incorporated into a database query such that it alters the query\u0027s structure rather than being treated as data. Impact depends on query context and the privileges under which the database connection executes.",
+                                "cause":  "String concatenation or interpolation used to construct SQL; absence of parameterisation; over-privileged database accounts; reliance on client-side validation.",
+                                "attack_scenario":  "An attacker submits a tautology payload such as \u0027 OR \u00271\u0027=\u00271 into a login field, causing the concatenated query to return all rows and bypass authentication. A UNION-based variant extracts data from other tables, including credential hashes.",
+                                "cia":  {
+                                            "confidentiality":  {
+                                                                    "level":  "High",
+                                                                    "rationale":  "Arbitrary read access to database contents, including credentials and personal data."
+                                                                },
+                                            "integrity":  {
+                                                              "level":  "High",
+                                                              "rationale":  "Data can be modified or deleted at the attacker\u0027s discretion."
+                                                          },
+                                            "availability":  {
+                                                                 "level":  "Medium",
+                                                                 "rationale":  "Table drops or resource exhaustion are possible but not the primary objective."
+                                                             }
+                                        },
+                                "likelihood":  {
+                                                   "score":  5,
+                                                   "justification":  "Publicly reachable with no authentication precondition; exploitation is automatable by commodity tooling; no special conditions required beyond a vulnerable parameter."
+                                               },
+                                "impact":  {
+                                               "score":  5,
+                                               "justification":  "Full database compromise, with potential lateral movement using credentials stored in the compromised schema."
+                                           },
+                                "risk":  {
+                                             "score":  25,
+                                             "band":  "Critical"
+                                         },
+                                "controls":  {
+                                                 "prevent":  [
+                                                                 "Use parameterised queries / prepared statements for all database access",
+                                                                 "Apply least-privilege database accounts; no application account with DDL rights",
+                                                                 "Allowlist validation for identifiers that cannot be parameterised"
+                                                             ],
+                                                 "detect":  [
+                                                                {
+                                                                    "ref":  "WSTG-INPV-05",
+                                                                    "label":  "Testing for SQL Injection"
+                                                                },
+                                                                "Application and database logs showing malformed query or syntax errors"
+                                                            ],
+                                                 "respond":  [
+                                                                 {
+                                                                     "ref":  "RS.AN",
+                                                                     "label":  "Analyse scope of exposure"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.MI",
+                                                                     "label":  "Patch, rotate credentials, review access logs"
+                                                                 }
+                                                             ],
+                                                 "verify":  [
+                                                                {
+                                                                    "chapter":  "Encoding and Sanitization",
+                                                                    "requirement":  "1.2.4"
+                                                                }
+                                                            ]
+                                             },
+                                "evidence":  [
+                                                 {
+                                                     "source":  "OWASP SQL Injection Prevention Cheat Sheet",
+                                                     "type":  "standard",
+                                                     "ref":  "OWASP (n.d.-b)"
+                                                 },
+                                                 {
+                                                     "source":  "OWASP Top 10:2021 A03 Injection",
+                                                     "type":  "standard",
+                                                     "ref":  "OWASP (2021)"
+                                                 },
+                                                 {
+                                                     "source":  "MITRE CWE-89",
+                                                     "type":  "standard",
+                                                     "ref":  "MITRE (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "Halfond et al. (2006)",
+                                                     "type":  "academic",
+                                                     "ref":  "Halfond et al. (2006)"
+                                                 }
+                                             ],
+                                "assumptions":  "Assumes a typical publicly reachable application with a relational database and an authenticated user population. Applications using parameterised ORMs throughout would rate lower on likelihood.",
+                                "status":  "complete"
+                            },
+                            {
+                                "id":  "V02",
+                                "name":  "Cross-Site Scripting (Reflected and Stored)",
+                                "owasp_category":  "A03:2021 Injection",
+                                "cwe":  "CWE-79",
+                                "cwe_name":  "Improper Neutralization of Input During Web Page Generation",
+                                "description":  "An application includes untrusted input in an HTML response without output encoding appropriate to the surrounding context, so the browser parses attacker-supplied data as executable script. Impact depends on the output context, any Content Security Policy, and the privileges of the viewing user.",
+                                "cause":  "Input inserted into the response without contextual encoding; client-side code writes untrusted data into unsafe DOM sinks; a Content Security Policy is absent or permissive; session cookies accessible to script.",
+                                "attack_scenario":  "An attacker posts a review containing a script tag. The application stores it unencoded and renders it to visitors. In each authenticated visitor\u0027s browser, the script runs with that user\u0027s session and exfiltrates the session cookie.",
+                                "classification_note":  "CWE-79 covers reflected, stored and DOM-based mechanisms. This entry addresses reflected and stored. DOM-based variants require client-side controls (safe DOM APIs, trusted types) which server-side encoding does not address.",
+                                "cia":  {
+                                            "confidentiality":  {
+                                                                    "level":  "High",
+                                                                    "rationale":  "Script executing in an authenticated session can read page content and exfiltrate session tokens."
+                                                                },
+                                            "integrity":  {
+                                                              "level":  "Medium",
+                                                              "rationale":  "Page content can be altered and actions performed on the victim\u0027s behalf."
+                                                          },
+                                            "availability":  {
+                                                                 "level":  "Low",
+                                                                 "rationale":  "No direct effect on service availability."
+                                                             }
+                                        },
+                                "likelihood":  {
+                                                   "score":  4,
+                                                   "justification":  "Reflected variants are publicly reachable by crafted link with no authentication required, which prevents a rating of 3. Not rated 5 because stored exploitation requires a payload submission and a victim viewing the page."
+                                               },
+                                "impact":  {
+                                               "score":  3,
+                                               "justification":  "Session theft is possible and consequential for affected users, but confined to the compromised user\u0027s session. Escalates toward 4 where the victim is administrative."
+                                           },
+                                "risk":  {
+                                             "score":  12,
+                                             "band":  "High"
+                                         },
+                                "controls":  {
+                                                 "prevent":  [
+                                                                 "Contextual output encoding applied at the point of rendering",
+                                                                 "Content Security Policy restricting inline and remote script",
+                                                                 "Set session cookies HttpOnly and SameSite",
+                                                                 "Framework auto-escaping enabled; bypass only for sanitised trusted content",
+                                                                 "For DOM-based variants: use textContent rather than innerHTML; avoid eval"
+                                                             ],
+                                                 "detect":  [
+                                                                {
+                                                                    "ref":  "WSTG-INPV-01",
+                                                                    "label":  "Testing for Reflected Cross Site Scripting"
+                                                                },
+                                                                {
+                                                                    "ref":  "WSTG-INPV-02",
+                                                                    "label":  "Testing for Stored Cross Site Scripting"
+                                                                },
+                                                                "CSP violation report endpoint",
+                                                                "Outbound request monitoring for script-encoded exfiltration patterns"
+                                                            ],
+                                                 "respond":  [
+                                                                 {
+                                                                     "ref":  "RS.AN",
+                                                                     "label":  "Identify affected pages and users who viewed them"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.MI",
+                                                                     "label":  "Remove payloads; deploy encoding fix; invalidate affected sessions"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.CO",
+                                                                     "label":  "Notify affected users where compromise is suspected"
+                                                                 }
+                                                             ],
+                                                 "verify":  [
+                                                                {
+                                                                    "chapter":  "Encoding and Sanitization",
+                                                                    "requirement":  "1.2.1"
+                                                                }
+                                                            ]
+                                             },
+                                "evidence":  [
+                                                 {
+                                                     "source":  "OWASP Cross Site Scripting Prevention Cheat Sheet",
+                                                     "type":  "standard",
+                                                     "ref":  "OWASP (n.d.-c)"
+                                                 },
+                                                 {
+                                                     "source":  "OWASP Top 10:2021 A03 Injection",
+                                                     "type":  "standard",
+                                                     "ref":  "OWASP (2021)"
+                                                 },
+                                                 {
+                                                     "source":  "MITRE CWE-79",
+                                                     "type":  "standard",
+                                                     "ref":  "MITRE (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "Nithya et al. (2015)",
+                                                     "type":  "academic",
+                                                     "ref":  "Nithya et al. (2015)"
+                                                 }
+                                             ],
+                                "assumptions":  "Assumes user-generated content rendered to authenticated users with session cookies and no CSP. Framework auto-escaping plus strict CSP would rate lower on likelihood.",
+                                "status":  "complete"
+                            },
+                            {
+                                "id":  "V03",
+                                "name":  "OS Command Injection",
+                                "owasp_category":  "A03:2021 Injection",
+                                "cwe":  "CWE-78",
+                                "cwe_name":  "Improper Neutralization of Special Elements used in an OS Command",
+                                "description":  "Untrusted input is passed to a shell or command interpreter without adequate sanitisation, so that an attacker can append or alter the executed command. Impact depends on the privileges of the process and whether the affected feature is reachable without authentication.",
+                                "cause":  "Direct invocation of shell commands with concatenated input; use of functions that invoke a shell (system, exec, popen); no allowlist on permitted arguments; process runs with unnecessary privileges.",
+                                "attack_scenario":  "A feature that converts images passes a filename to a shell command. An attacker submits a filename such as photo.jpg; cat /etc/passwd and the appended command executes in the server process context, returning the file contents.",
+                                "cia":  {
+                                            "confidentiality":  {
+                                                                    "level":  "High",
+                                                                    "rationale":  "Arbitrary file read and credential extraction from the server\u0027s filesystem."
+                                                                },
+                                            "integrity":  {
+                                                              "level":  "High",
+                                                              "rationale":  "Files can be modified or deleted with process privileges."
+                                                          },
+                                            "availability":  {
+                                                                 "level":  "High",
+                                                                 "rationale":  "Commands that terminate processes or fill disk can disable the service."
+                                                             }
+                                        },
+                                "likelihood":  {
+                                                   "score":  3,
+                                                   "justification":  "Requires that a feature invokes a shell with user-controlled input, which prevents a rating of 4. Rated 3 because authenticated access is the typical context, though public-facing features that shell out (image processing, PDF generation) raise this toward 4."
+                                               },
+                                "impact":  {
+                                               "score":  5,
+                                               "justification":  "Command execution typically permits full server compromise, and lateral movement where credentials are present on the host."
+                                           },
+                                "risk":  {
+                                             "score":  15,
+                                             "band":  "High"
+                                         },
+                                "controls":  {
+                                                 "prevent":  [
+                                                                 "Avoid shell invocation; use language APIs that take argument arrays and bypass the shell",
+                                                                 "Allowlist permitted values for any argument passed to an external process",
+                                                                 "Run processes with least privilege and in a sandboxed environment",
+                                                                 "Remove unused command-invoking features from production builds"
+                                                             ],
+                                                 "detect":  [
+                                                                {
+                                                                    "ref":  "WSTG-INPV-12",
+                                                                    "label":  "Testing for Command Injection (VERIFY ID)"
+                                                                },
+                                                                "Process accounting and command execution logs",
+                                                                "Outbound network egress monitoring for command-triggered traffic"
+                                                            ],
+                                                 "respond":  [
+                                                                 {
+                                                                     "ref":  "RS.AN",
+                                                                     "label":  "Determine command history and filesystem changes"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.MI",
+                                                                     "label":  "Rebuild from known-good image; rotate all host credentials"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RC.RP",
+                                                                     "label":  "Restore data and configuration from verified backups"
+                                                                 }
+                                                             ],
+                                                 "verify":  [
+                                                                {
+                                                                    "chapter":  "Encoding and Sanitization",
+                                                                    "requirement":  "1.2.5"
+                                                                }
+                                                            ]
+                                             },
+                                "evidence":  [
+                                                 {
+                                                     "source":  "OWASP OS Command Injection Defense Cheat Sheet",
+                                                     "type":  "standard",
+                                                     "ref":  "OWASP (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "MITRE CWE-78",
+                                                     "type":  "standard",
+                                                     "ref":  "MITRE (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "Alahmad et al. (2022)",
+                                                     "type":  "academic",
+                                                     "ref":  "Alahmad et al. (2022)"
+                                                 }
+                                             ],
+                                "assumptions":  "Assumes a feature that invokes the shell for legitimate purposes. Applications without any shell-invoking code do not carry this vulnerability.",
+                                "status":  "complete"
+                            },
+                            {
+                                "id":  "V04",
+                                "name":  "Insecure Direct Object Reference",
+                                "owasp_category":  "A01:2021 Broken Access Control",
+                                "cwe":  "CWE-639",
+                                "cwe_name":  "Authorization Bypass Through User-Controlled Key",
+                                "description":  "The application exposes a reference to an internal object and fails to verify that the requesting user is authorised to access that specific object. The user is authenticated and permitted to use the feature, but is not confined to their own records.",
+                                "cause":  "Authorisation enforced at route level but not re-checked against the requested object; the client-supplied identifier is trusted as proof of entitlement; data access queries not scoped to the authenticated user; sequential identifiers make enumeration trivial.",
+                                "attack_scenario":  "An authenticated customer views an order at /orders?id=1001 and changes the parameter to 1002, receiving another customer\u0027s order. Where a write variant exists, changing another user\u0027s email address can be used to trigger a password reset and take over the account.",
+                                "cia":  {
+                                            "confidentiality":  {
+                                                                    "level":  "High",
+                                                                    "rationale":  "Direct disclosure of other users\u0027 personal data, scalable to the full user population through enumeration."
+                                                                },
+                                            "integrity":  {
+                                                              "level":  "Medium",
+                                                              "rationale":  "Write variants permit modification of other users\u0027 records, including account takeover via email change."
+                                                          },
+                                            "availability":  {
+                                                                 "level":  "Low",
+                                                                 "rationale":  "No direct effect on service availability."
+                                                             }
+                                        },
+                                "likelihood":  {
+                                                   "score":  4,
+                                                   "justification":  "Requires an authenticated account, which prevents 5. Beyond that precondition, no privilege beyond a standard user is needed and the manipulation is a single parameter change, which favours 4 over 3. An assessor applying the anchors strictly could defend 3."
+                                               },
+                                "impact":  {
+                                               "score":  4,
+                                               "justification":  "Disclosure of personal and financial data across the user population with regulatory consequences and a credible route to account takeover."
+                                           },
+                                "risk":  {
+                                             "score":  16,
+                                             "band":  "High"
+                                         },
+                                "controls":  {
+                                                 "prevent":  [
+                                                                 "Enforce object-level authorisation on every request, server-side, against the authenticated principal",
+                                                                 "Scope data access queries to the current user so unauthorised records are unreachable",
+                                                                 "Apply deny-by-default to all object access",
+                                                                 "Route object access through a centralised authorisation policy",
+                                                                 "Use unguessable identifiers as defence in depth only â€?not as a substitute for authorisation"
+                                                             ],
+                                                 "detect":  [
+                                                                {
+                                                                    "ref":  "WSTG-ATHZ-04",
+                                                                    "label":  "Testing for Insecure Direct Object References"
+                                                                },
+                                                                "Access logs showing clusters of 403/404 against sequential identifiers",
+                                                                "Alerting on enumeration patterns from a single session"
+                                                            ],
+                                                 "respond":  [
+                                                                 {
+                                                                     "ref":  "RS.AN",
+                                                                     "label":  "Determine scope of exposure from access logs"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.MI",
+                                                                     "label":  "Deploy authorisation fix; invalidate sessions where takeover suspected"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.CO",
+                                                                     "label":  "Assess notification obligations under POPIA or UK GDPR"
+                                                                 }
+                                                             ],
+                                                 "verify":  [
+                                                                {
+                                                                    "chapter":  "Authorization",
+                                                                    "requirement":  "8.2.2"
+                                                                }
+                                                            ]
+                                             },
+                                "evidence":  [
+                                                 {
+                                                     "source":  "OWASP Top 10:2021 A01 Broken Access Control",
+                                                     "type":  "standard",
+                                                     "ref":  "OWASP (2021)"
+                                                 },
+                                                 {
+                                                     "source":  "MITRE CWE-639",
+                                                     "type":  "standard",
+                                                     "ref":  "MITRE (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "OWASP WSTG-ATHZ-04",
+                                                     "type":  "standard",
+                                                     "ref":  "OWASP (2020)"
+                                                 },
+                                                 {
+                                                     "source":  "Anas et al. (2023)",
+                                                     "type":  "academic",
+                                                     "ref":  "Anas et al. (2023)"
+                                                 }
+                                             ],
+                                "assumptions":  "Assumes an application with self-registration enabled, identifiers exposed in URLs, and route-level rather than object-level access control.",
+                                "status":  "complete"
+                            },
+                            {
+                                "id":  "V05",
+                                "name":  "Missing Function-Level Authorisation",
+                                "owasp_category":  "A01:2021 Broken Access Control",
+                                "cwe":  "CWE-862",
+                                "cwe_name":  "Missing Authorization",
+                                "description":  "An endpoint or function performs an action without verifying that the requesting user holds the role or permission that action requires. Unlike V04, the failure is at the feature level, not the object level: an authenticated low-privilege user can invoke administrative actions.",
+                                "cause":  "Authorisation enforced only in the user interface, not on the server; route guards defined per-controller and inconsistently applied; new endpoints added without a default-deny policy; role checks implemented in client code.",
+                                "attack_scenario":  "A user with the standard role discovers the administrative endpoint /admin/users/delete by observing JavaScript or guessing the pattern, and issues the request directly. The server, which relied on the UI to hide the button, executes the deletion.",
+                                "cia":  {
+                                            "confidentiality":  {
+                                                                    "level":  "High",
+                                                                    "rationale":  "Administrative functions typically expose data the user is not entitled to view."
+                                                                },
+                                            "integrity":  {
+                                                              "level":  "High",
+                                                              "rationale":  "Administrative write operations can be invoked, altering records or configuration."
+                                                          },
+                                            "availability":  {
+                                                                 "level":  "Medium",
+                                                                 "rationale":  "Some administrative functions (user disablement, service shutdown) affect availability."
+                                                             }
+                                        },
+                                "likelihood":  {
+                                                   "score":  3,
+                                                   "justification":  "Requires an authenticated account with the lower privilege, which prevents 4. Rated 3 because endpoint discovery is a modest effort and no second weakness is needed. Public self-registration lowers the barrier further."
+                                               },
+                                "impact":  {
+                                               "score":  4,
+                                               "justification":  "Full administrative capability is reachable, but the specific outcome depends on which functions are exposed. Rated 4 rather than 5 because the harm is bounded by the administrative surface actually present."
+                                           },
+                                "risk":  {
+                                             "score":  12,
+                                             "band":  "High"
+                                         },
+                                "controls":  {
+                                                 "prevent":  [
+                                                                 "Apply authorisation middleware to every endpoint as a default; opt out explicitly and rarely",
+                                                                 "Define roles as a central policy evaluated server-side on each request",
+                                                                 "Never enforce authorisation in the UI alone",
+                                                                 "Maintain an endpoint inventory with role requirements documented per route"
+                                                             ],
+                                                 "detect":  [
+                                                                {
+                                                                    "ref":  "WSTG-ATHZ-02",
+                                                                    "label":  "Testing for Bypassing Authorization Schema"
+                                                                },
+                                                                "Server logs showing role-denied requests from low-privilege accounts",
+                                                                "Alert on requests to administrative routes from non-administrative sessions"
+                                                            ],
+                                                 "respond":  [
+                                                                 {
+                                                                     "ref":  "RS.AN",
+                                                                     "label":  "Review access logs for prior unauthorised invocations"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.MI",
+                                                                     "label":  "Deploy policy; audit configuration changes made during the exposure window"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.CO",
+                                                                     "label":  "Notify where unauthorised actions affected user data"
+                                                                 }
+                                                             ],
+                                                 "verify":  [
+                                                                {
+                                                                    "chapter":  "Authorization",
+                                                                    "requirement":  "8.2.1"
+                                                                }
+                                                            ]
+                                             },
+                                "evidence":  [
+                                                 {
+                                                     "source":  "OWASP Top 10:2021 A01 Broken Access Control",
+                                                     "type":  "standard",
+                                                     "ref":  "OWASP (2021)"
+                                                 },
+                                                 {
+                                                     "source":  "MITRE CWE-862",
+                                                     "type":  "standard",
+                                                     "ref":  "MITRE (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "Anas et al. (2023)",
+                                                     "type":  "academic",
+                                                     "ref":  "Anas et al. (2023)"
+                                                 }
+                                             ],
+                                "assumptions":  "Assumes an application with multiple roles and endpoints exposed over HTTP. Single-role applications do not carry this vulnerability.",
+                                "status":  "complete"
+                            },
+                            {
+                                "id":  "V06",
+                                "name":  "Weak Authentication and Absent Rate Limiting",
+                                "owasp_category":  "A07:2021 Identification and Authentication Failures",
+                                "cwe":  "CWE-307",
+                                "cwe_name":  "Improper Restriction of Excessive Authentication Attempts",
+                                "description":  "The authentication mechanism permits repeated credential guessing without effective throttling, lockout or bot mitigation, so that password or MFA codes can be enumerated within practical time limits.",
+                                "cause":  "No per-account or per-IP rate limiting; lockout absent or trivially bypassed (IP rotation); no account-level anomaly detection; passwords accepted without minimum strength requirements; no MFA available.",
+                                "attack_scenario":  "An attacker runs a credential-stuffing campaign against the login endpoint using passwords from previous public breaches. Without rate limiting, a list of one million pairs is tested in hours, and any reused passwords yield valid sessions.",
+                                "cia":  {
+                                            "confidentiality":  {
+                                                                    "level":  "High",
+                                                                    "rationale":  "Successful compromise grants access to the victim\u0027s data within the application."
+                                                                },
+                                            "integrity":  {
+                                                              "level":  "High",
+                                                              "rationale":  "Actions can be performed with the victim\u0027s authority."
+                                                          },
+                                            "availability":  {
+                                                                 "level":  "Low",
+                                                                 "rationale":  "No direct effect on availability, though lockout mechanisms can be abused to deny access if poorly designed."
+                                                             }
+                                        },
+                                "likelihood":  {
+                                                   "score":  4,
+                                                   "justification":  "Publicly reachable login endpoint with no authentication precondition of its own, which prevents 3. Not 5 because rate limiting may exist even if weak, and the effectiveness of credential stuffing depends on password reuse in the target population."
+                                               },
+                                "impact":  {
+                                               "score":  4,
+                                               "justification":  "Compromise of individual accounts and, where the compromised account has elevated privileges, escalation to broader access. Rated 4 rather than 5 because the harm is not full-system compromise by default."
+                                           },
+                                "risk":  {
+                                             "score":  16,
+                                             "band":  "High"
+                                         },
+                                "controls":  {
+                                                 "prevent":  [
+                                                                 "Rate limiting per account and per source IP, with progressive delays",
+                                                                 "Account lockout or CAPTCHA after repeated failures",
+                                                                 "Offer multi-factor authentication, at minimum for privileged accounts",
+                                                                 "Reject passwords present in known-breach corpora (e.g. HIBP)",
+                                                                 "Return generic failure messages to prevent username enumeration"
+                                                             ],
+                                                 "detect":  [
+                                                                {
+                                                                    "ref":  "WSTG-ATHN-03",
+                                                                    "label":  "Testing for Weak Lock Out Mechanism"
+                                                                },
+                                                                "Authentication logs detecting distributed credential-stuffing patterns",
+                                                                "Alerting on sudden spikes in failed authentication from distributed sources"
+                                                            ],
+                                                 "respond":  [
+                                                                 {
+                                                                     "ref":  "RS.MI",
+                                                                     "label":  "Block source ranges; invalidate compromised sessions; force password reset"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.AN",
+                                                                     "label":  "Identify successfully compromised accounts and their actions"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.CO",
+                                                                     "label":  "Notify affected users with remediation guidance"
+                                                                 }
+                                                             ],
+                                                 "verify":  [
+                                                                {
+                                                                    "chapter":  "Authentication",
+                                                                    "requirement":  "6.3.1"
+                                                                }
+                                                            ]
+                                             },
+                                "evidence":  [
+                                                 {
+                                                     "source":  "OWASP Authentication Cheat Sheet",
+                                                     "type":  "standard",
+                                                     "ref":  "OWASP (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "MITRE CWE-307",
+                                                     "type":  "standard",
+                                                     "ref":  "MITRE (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "Vinberg \u0026 Overson (2021)",
+                                                     "type":  "academic",
+                                                     "ref":  "Vinberg \u0026 Overson (2021)"
+                                                 }
+                                             ],
+                                "assumptions":  "Assumes a username/password authentication endpoint reachable from the internet. Applications requiring additional factors or deploying bot mitigation would rate substantially lower.",
+                                "status":  "complete"
+                            },
+                            {
+                                "id":  "V07",
+                                "name":  "Session Fixation and Missing Session Expiry",
+                                "owasp_category":  "A07:2021 Identification and Authentication Failures",
+                                "cwe":  "CWE-384",
+                                "cwe_name":  "Session Fixation",
+                                "description":  "The application does not rotate the session identifier on authentication, and does not enforce absolute or idle session expiry. An attacker who obtains or sets a session identifier before login retains it afterwards, or an abandoned session remains usable indefinitely.",
+                                "cause":  "Session identifier not regenerated on login; no idle timeout configured; no absolute session lifetime; logout invalidates only client-side state, not the server record; cookies issued without Secure or SameSite.",
+                                "attack_scenario":  "An attacker sends a victim a link containing a session identifier the attacker has already obtained. The victim logs in using that session; the identifier remains valid and the attacker now shares the authenticated session.",
+                                "cia":  {
+                                            "confidentiality":  {
+                                                                    "level":  "High",
+                                                                    "rationale":  "The attacker reads pages as the authenticated victim."
+                                                                },
+                                            "integrity":  {
+                                                              "level":  "Medium",
+                                                              "rationale":  "Actions can be taken with the victim\u0027s authority."
+                                                          },
+                                            "availability":  {
+                                                                 "level":  "Low",
+                                                                 "rationale":  "No direct effect on availability."
+                                                             }
+                                        },
+                                "likelihood":  {
+                                                   "score":  3,
+                                                   "justification":  "Requires the attacker to obtain or set a session identifier before the victim authenticates, which is an interaction precondition that prevents 4. Rated 3 because the technique is well documented and requires no special privilege."
+                                               },
+                                "impact":  {
+                                               "score":  4,
+                                               "justification":  "Full session hijack with the victim\u0027s privileges. Rated 4 rather than 5 because impact is bounded by the victim\u0027s role."
+                                           },
+                                "risk":  {
+                                             "score":  12,
+                                             "band":  "High"
+                                         },
+                                "controls":  {
+                                                 "prevent":  [
+                                                                 "Regenerate the session identifier on every authentication and privilege change",
+                                                                 "Set cookies Secure, HttpOnly, SameSite=Lax or Strict",
+                                                                 "Enforce both idle and absolute session timeouts",
+                                                                 "Invalidate sessions server-side on logout, not only client-side"
+                                                             ],
+                                                 "detect":  [
+                                                                {
+                                                                    "ref":  "WSTG-SESS-01",
+                                                                    "label":  "Testing for Session Management Schema"
+                                                                },
+                                                                "Alerting on session identifiers reused across distinct source addresses",
+                                                                "Tracking of sessions active beyond the absolute lifetime"
+                                                            ],
+                                                 "respond":  [
+                                                                 {
+                                                                     "ref":  "RS.MI",
+                                                                     "label":  "Invalidate all sessions; rotate session signing keys"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.AN",
+                                                                     "label":  "Examine concurrent-use patterns for compromised accounts"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.CO",
+                                                                     "label":  "Notify affected users"
+                                                                 }
+                                                             ],
+                                                 "verify":  [
+                                                                {
+                                                                    "chapter":  "Session Management",
+                                                                    "requirement":  "7.2.4"
+                                                                }
+                                                            ]
+                                             },
+                                "evidence":  [
+                                                 {
+                                                     "source":  "OWASP Session Management Cheat Sheet",
+                                                     "type":  "standard",
+                                                     "ref":  "OWASP (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "MITRE CWE-384",
+                                                     "type":  "standard",
+                                                     "ref":  "MITRE (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "Kol?ek (2002)",
+                                                     "type":  "academic",
+                                                     "ref":  "Kol?ek (2002)"
+                                                 }
+                                             ],
+                                "assumptions":  "Assumes cookie-based session management. Stateless token-based authentication has different fixation characteristics and would be assessed separately.",
+                                "status":  "complete"
+                            },
+                            {
+                                "id":  "V08",
+                                "name":  "Weak Cryptographic Storage and Transport",
+                                "owasp_category":  "A02:2021 Cryptographic Failures",
+                                "cwe":  "CWE-916",
+                                "cwe_name":  "Use of Password Hash With Insufficient Computational Effort",
+                                "description":  "Sensitive data â€?passwords, tokens, or personal information â€?is protected using algorithms or key management that no longer resist modern attack, or transmitted over channels that permit interception. Impact depends on whether confidentiality of the data is required and whether an attacker can obtain the protected form.",
+                                "cause":  "Passwords hashed with fast algorithms (MD5, SHA-1, unsalted); TLS not enforced or deprecated versions permitted; keys hardcoded or stored alongside ciphertext; sensitive fields stored in plaintext.",
+                                "attack_scenario":  "An attacker obtains a database backup. Password hashes are unsalted MD5. A rainbow-table or GPU cracking process recovers a substantial fraction of the plaintext passwords within hours, and the recovered pairs are reused against other services.",
+                                "cia":  {
+                                            "confidentiality":  {
+                                                                    "level":  "High",
+                                                                    "rationale":  "Protected data becomes readable once the weak protection is broken."
+                                                                },
+                                            "integrity":  {
+                                                              "level":  "Medium",
+                                                              "rationale":  "Where symmetric keys are compromised, ciphertext can be forged or altered."
+                                                          },
+                                            "availability":  {
+                                                                 "level":  "Low",
+                                                                 "rationale":  "No direct effect on availability."
+                                                             }
+                                        },
+                                "likelihood":  {
+                                                   "score":  3,
+                                                   "justification":  "Requires the attacker to first obtain the protected form (database access, network interception), which prevents 4. Rated 3 because once obtained, cracking weak hashes is routine."
+                                               },
+                                "impact":  {
+                                               "score":  5,
+                                               "justification":  "Recovery of plaintext credentials enables account compromise across the affected service and, through password reuse, across unrelated services."
+                                           },
+                                "risk":  {
+                                             "score":  15,
+                                             "band":  "High"
+                                         },
+                                "controls":  {
+                                                 "prevent":  [
+                                                                 "Hash passwords with Argon2id, bcrypt or scrypt at a work factor tuned to hardware",
+                                                                 "Salt every password hash uniquely",
+                                                                 "Enforce TLS 1.2+ with HSTS; disable deprecated protocols and ciphers",
+                                                                 "Encrypt sensitive fields at rest with keys managed separately from the database",
+                                                                 "Never log or display secret material"
+                                                             ],
+                                                 "detect":  [
+                                                                {
+                                                                    "ref":  "WSTG-CRYP-01",
+                                                                    "label":  "Testing for Weak Transport Layer Security"
+                                                                },
+                                                                {
+                                                                    "ref":  "WSTG-CONF-07",
+                                                                    "label":  "Testing HTTP Strict Transport Security"
+                                                                },
+                                                                "Configuration scanning for deprecated TLS versions and cipher suites"
+                                                            ],
+                                                 "respond":  [
+                                                                 {
+                                                                     "ref":  "RS.MI",
+                                                                     "label":  "Rotate keys; force password reset for affected users"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.AN",
+                                                                     "label":  "Determine exposure window and scope"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.CO",
+                                                                     "label":  "Notify affected users and regulators as required"
+                                                                 }
+                                                             ],
+                                                 "verify":  [
+                                                                {
+                                                                    "chapter":  "Cryptography",
+                                                                    "requirement":  "11.4.2"
+                                                                }
+                                                            ]
+                                             },
+                                "evidence":  [
+                                                 {
+                                                     "source":  "OWASP Password Storage Cheat Sheet",
+                                                     "type":  "standard",
+                                                     "ref":  "OWASP (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "OWASP Transport Layer Security Cheat Sheet",
+                                                     "type":  "standard",
+                                                     "ref":  "OWASP (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "MITRE CWE-916",
+                                                     "type":  "standard",
+                                                     "ref":  "MITRE (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "Sumagita \u0026 Riadi (2018)",
+                                                     "type":  "academic",
+                                                     "ref":  "Sumagita \u0026 Riadi (2018)"
+                                                 }
+                                             ],
+                                "assumptions":  "Assumes password-based authentication and a relational database. Applications delegating authentication to a maintained identity provider inherit that provider\u0027s cryptographic posture.",
+                                "status":  "complete"
+                            },
+                            {
+                                "id":  "V09",
+                                "name":  "Security Misconfiguration",
+                                "owasp_category":  "A05:2021 Security Misconfiguration",
+                                "cwe":  "CWE-16",
+                                "cwe_name":  "Configuration",
+                                "description":  "The application or its supporting infrastructure is deployed with settings that depart from a hardened baseline: default credentials, verbose errors, missing security headers, exposed administrative interfaces, or unnecessary services. Impact is heterogeneous and depends on which specific setting is affected.",
+                                "classification_note":  "CWE-16 is a category rather than a specific weakness. This entry retains the category as a single row because the underlying controls (hardening baseline, centralised configuration, automated scanning) are common across most misconfigurations. Where a specific variant dominates an assessment (e.g. default credentials on an admin panel), it should be promoted to its own row with its own score.",
+                                "cause":  "Default settings retained in production; development configuration deployed to production; security headers not configured at the reverse proxy; unnecessary services and sample applications left running; administrative interfaces bound to public addresses.",
+                                "attack_scenario":  "An attacker identifies the product from a response header and reads the vendor\u0027s published default administrator credentials. Authenticating to the exposed console grants full control of the application, including read access to all data and the ability to disable security controls.",
+                                "cia":  {
+                                            "confidentiality":  {
+                                                                    "level":  "High",
+                                                                    "rationale":  "Default administrative access exposes all application data."
+                                                                },
+                                            "integrity":  {
+                                                              "level":  "High",
+                                                              "rationale":  "Configuration and data can be altered through administrative interfaces."
+                                                          },
+                                            "availability":  {
+                                                                 "level":  "Medium",
+                                                                 "rationale":  "Administrative access permits service shutdown or misconfiguration that disrupts availability."
+                                                             }
+                                        },
+                                "likelihood":  {
+                                                   "score":  4,
+                                                   "justification":  "Publicly reachable administrative interfaces with default credentials require no guessing, which prevents 3. Not rated 5 because a hardened deployment would remove this path entirely, so the score depends on deployment practice rather than the product."
+                                               },
+                                "impact":  {
+                                               "score":  4,
+                                               "justification":  "Full application compromise where defaults are exploitable, bounded only by the surface of the exposed interface. Rated 4 rather than 5 because the specific consequence depends on the settings involved."
+                                           },
+                                "risk":  {
+                                             "score":  16,
+                                             "band":  "High"
+                                         },
+                                "controls":  {
+                                                 "prevent":  [
+                                                                 "Require credential change at first login; refuse to start with default credentials in production",
+                                                                 "Deploy a documented hardening baseline through infrastructure-as-code, not manually",
+                                                                 "Set Content-Security-Policy, HSTS, X-Content-Type-Options and frame-ancestors centrally at the reverse proxy",
+                                                                 "Disable debug mode and verbose errors in production; log detail server-side",
+                                                                 "Bind administrative interfaces to internal networks or behind a VPN",
+                                                                 "Remove sample applications, default accounts and unused services"
+                                                             ],
+                                                 "detect":  [
+                                                                {
+                                                                    "ref":  "WSTG-CONF-01",
+                                                                    "label":  "Testing Network Infrastructure Configuration"
+                                                                },
+                                                                {
+                                                                    "ref":  "WSTG-ERRH-01",
+                                                                    "label":  "Testing for Improper Error Handling"
+                                                                },
+                                                                "Automated configuration scanning against CIS Benchmarks or the ASVS configuration chapter",
+                                                                "Periodic external scanning for exposed administrative interfaces"
+                                                            ],
+                                                 "respond":  [
+                                                                 {
+                                                                     "ref":  "RS.MI",
+                                                                     "label":  "Rotate credentials; disable exposed services; deploy corrected headers"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.AN",
+                                                                     "label":  "Review access logs for use of exposed interfaces before detection"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.CO",
+                                                                     "label":  "Assess notification obligations where data was accessed"
+                                                                 }
+                                                             ],
+                                                 "verify":  [
+                                                                {
+                                                                    "chapter":  "Configuration",
+                                                                    "requirement":  "13.4.2"
+                                                                }
+                                                            ]
+                                             },
+                                "evidence":  [
+                                                 {
+                                                     "source":  "OWASP Top 10:2021 A05 Security Misconfiguration",
+                                                     "type":  "standard",
+                                                     "ref":  "OWASP (2021)"
+                                                 },
+                                                 {
+                                                     "source":  "MITRE CWE-16",
+                                                     "type":  "standard",
+                                                     "ref":  "MITRE (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "Wainakh et al. (2015)",
+                                                     "type":  "academic",
+                                                     "ref":  "Wainakh et al. (2015)"
+                                                 }
+                                             ],
+                                "assumptions":  "Assumes a production deployment where framework and server defaults have not been hardened. Where the specific misconfiguration dominates, the row should be split as noted in classification_note.",
+                                "status":  "complete"
+                            },
+                            {
+                                "id":  "V10",
+                                "name":  "Vulnerable and Outdated Components",
+                                "owasp_category":  "A06:2021 Vulnerable and Outdated Components",
+                                "cwe":  "CWE-1395",
+                                "cwe_name":  "Dependency on Vulnerable Third-Party Component",
+                                "description":  "A third-party library, framework or runtime is deployed at a version for which public vulnerability disclosures exist, such that an attacker with access to those disclosures can reproduce an exploit. Impact depends on the specific disclosed flaw, on whether the vulnerable code path is reachable, and on the privileges under which the component executes.",
+                                "cause":  "No inventory of deployed components; transitive dependencies invisible to the team; no patch policy or SLA; outdated versions retained because upgrade cost is deferred; verification of dependency signatures absent.",
+                                "attack_scenario":  "A public scanning service fingerprints the application\u0027s framework version from response headers or JavaScript hashes. The version corresponds to a published remote-code-execution advisory. An attacker runs a public exploit against the application and obtains code execution in the application-server process context.",
+                                "classification_note":  "CWE-1104 (unmaintained components) and CWE-937 (known vulnerabilities) both fall under CWE-1395 as the parent. CWE-1395 is used here as the specific weakness covering the general case of dependency on a component with known disclosures.",
+                                "cia":  {
+                                            "confidentiality":  {
+                                                                    "level":  "High",
+                                                                    "rationale":  "Where the disclosed flaw is RCE or auth bypass, all application data becomes reachable."
+                                                                },
+                                            "integrity":  {
+                                                              "level":  "High",
+                                                              "rationale":  "RCE typically permits modification of data and configuration."
+                                                          },
+                                            "availability":  {
+                                                                 "level":  "High",
+                                                                 "rationale":  "RCE typically permits disruption of the application process and the host."
+                                                             }
+                                        },
+                                "likelihood":  {
+                                                   "score":  4,
+                                                   "justification":  "Public exposure of version information and reuse of public exploits make exploitation cheap and automatable, which prevents 3. Not rated 5 because reachability of the vulnerable code path is not guaranteed by the presence of the CVE, and many CVEs are not exploitable in a given deployment."
+                                               },
+                                "impact":  {
+                                               "score":  5,
+                                               "justification":  "The consequence of an exploited RCE in an application component is typically full server compromise with lateral movement."
+                                           },
+                                "risk":  {
+                                             "score":  20,
+                                             "band":  "Critical"
+                                         },
+                                "controls":  {
+                                                 "prevent":  [
+                                                                 "Maintain a software bill of materials (SBOM) covering direct and transitive dependencies",
+                                                                 "Add a software composition analysis (SCA) gate to the build pipeline that blocks known-vulnerable versions",
+                                                                 "Define a patch policy with remediation SLAs by severity",
+                                                                 "Verify package signatures and lock dependencies to reviewed versions",
+                                                                 "Remove unused dependencies"
+                                                             ],
+                                                 "detect":  [
+                                                                {
+                                                                    "ref":  "NO-DIRECT-WSTG",
+                                                                    "label":  "No direct WSTG test â€?see detection note"
+                                                                },
+                                                                "Runtime SCA on deployed artefacts comparing versions to a vulnerability feed",
+                                                                "Alerting on new advisories affecting currently deployed versions"
+                                                            ],
+                                                 "detect_note":  "No direct WSTG test case exists for this weakness. Detection depends on tooling (SCA scanning) rather than manual test procedure, because the weakness is visible in dependency metadata rather than application behaviour.",
+                                                 "respond":  [
+                                                                 {
+                                                                     "ref":  "RS.MI",
+                                                                     "label":  "Patch affected components or apply compensating controls; isolate exposed instances"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.AN",
+                                                                     "label":  "Determine whether the vulnerable path was reached before remediation"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RC.RP",
+                                                                     "label":  "Rebuild from a known-good artefact where compromise is suspected"
+                                                                 }
+                                                             ],
+                                                 "verify":  [
+                                                                {
+                                                                    "chapter":  "Secure Coding and Architecture",
+                                                                    "requirement":  "15.2.1"
+                                                                }
+                                                            ]
+                                             },
+                                "evidence":  [
+                                                 {
+                                                     "source":  "OWASP Top 10:2021 A06 Vulnerable and Outdated Components",
+                                                     "type":  "standard",
+                                                     "ref":  "OWASP (2021)"
+                                                 },
+                                                 {
+                                                     "source":  "MITRE CWE-1395",
+                                                     "type":  "standard",
+                                                     "ref":  "MITRE (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "Adelusi et al. (2023)",
+                                                     "type":  "academic",
+                                                     "ref":  "Adelusi et al. (2023)"
+                                                 }
+                                             ],
+                                "assumptions":  "Assumes a typical web application with third-party runtime dependencies and publicly observable version indicators. Applications with air-gapped deployments and no version disclosure would rate lower on likelihood.",
+                                "status":  "complete"
+                            },
+                            {
+                                "id":  "V11",
+                                "name":  "Insufficient Logging and Monitoring",
+                                "owasp_category":  "A09:2021 Security Logging and Monitoring Failures",
+                                "cwe":  "CWE-778",
+                                "cwe_name":  "Insufficient Logging",
+                                "description":  "Security-relevant events â€?authentication failures, access-control denials, input validation failures â€?are not logged, not centralised, or not monitored for patterns that would indicate an attack. The weakness does not itself permit compromise, but it removes the organisation\u0027s ability to detect and respond to compromise that occurs through other means.",
+                                "cause":  "No logging of authentication and authorisation decisions; logs stored locally and lost on compromise; no alerting thresholds; log data not reviewed; sensitive data in logs creating a secondary risk; log injection not prevented.",
+                                "attack_scenario":  "An attacker uses V06 to guess a user\u0027s password across a week of attempts. Each failed attempt generates no log record visible to operations. The successful login also generates no alert. The attacker operates for months, and the breach is discovered only when the customer reports it.",
+                                "cia":  {
+                                            "confidentiality":  {
+                                                                    "level":  "Medium",
+                                                                    "rationale":  "Does not itself expose data, but removes the ability to detect and contain exposure."
+                                                                },
+                                            "integrity":  {
+                                                              "level":  "Medium",
+                                                              "rationale":  "Does not itself modify data, but removes the ability to detect modification."
+                                                          },
+                                            "availability":  {
+                                                                 "level":  "Low",
+                                                                 "rationale":  "No direct effect on availability."
+                                                             }
+                                        },
+                                "classification_note":  "The primary harm of this weakness is not well captured by the CIA triad, which measures properties of data rather than of the organisation\u0027s ability to respond. Accountability is the property most affected. The CIA ratings above are recorded for consistency with the framework, but the discussion should note the limitation.",
+                                "likelihood":  {
+                                                   "score":  3,
+                                                   "justification":  "The weakness itself does not require exploitation â€?it is a state of the environment, so likelihood is best interpreted as the probability that a compromise would go undetected. Rated 3 because most applications have some logging, but few have centralised alerting on security events."
+                                               },
+                                "impact":  {
+                                               "score":  3,
+                                               "justification":  "Consequences are indirect: prolonged dwell time, greater scope of damage once discovered, and impaired incident response. Rated 3 because detection failure compounds other weaknesses rather than causing harm directly."
+                                           },
+                                "risk":  {
+                                             "score":  9,
+                                             "band":  "Medium"
+                                         },
+                                "controls":  {
+                                                 "prevent":  [
+                                                                 "Define a logging standard covering authentication, authorisation, input validation and administrative actions",
+                                                                 "Centralise logs to a system outside the application\u0027s control",
+                                                                 "Never log secrets or session tokens",
+                                                                 "Prevent log injection through encoding of untrusted input written to logs"
+                                                             ],
+                                                 "detect":  [
+                                                                {
+                                                                    "ref":  "NO-DIRECT-WSTG",
+                                                                    "label":  "No direct WSTG test â€?see detection note"
+                                                                },
+                                                                "SIEM alerting on authentication spikes, access-control denials, and administrative action patterns",
+                                                                "Regular log review procedures with documented ownership"
+                                                            ],
+                                                 "detect_note":  "No direct WSTG test case exists for this weakness. Detection depends on tooling (SIEM) and process (review), because the weakness is the absence of monitoring rather than a property of application behaviour.",
+                                                 "respond":  [
+                                                                 {
+                                                                     "ref":  "DE.AE",
+                                                                     "label":  "Analyse detected events to establish scope"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.AN",
+                                                                     "label":  "Reconstruct the timeline of compromise from retained logs"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.CO",
+                                                                     "label":  "Notify affected users and regulators as required"
+                                                                 }
+                                                             ],
+                                                 "verify":  [
+                                                                {
+                                                                    "chapter":  "Security Logging and Error Handling",
+                                                                    "requirement":  "16.3.1"
+                                                                }
+                                                            ]
+                                             },
+                                "evidence":  [
+                                                 {
+                                                     "source":  "OWASP Top 10:2021 A09 Security Logging and Monitoring Failures",
+                                                     "type":  "standard",
+                                                     "ref":  "OWASP (2021)"
+                                                 },
+                                                 {
+                                                     "source":  "OWASP Logging Cheat Sheet",
+                                                     "type":  "standard",
+                                                     "ref":  "OWASP (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "MITRE CWE-778",
+                                                     "type":  "standard",
+                                                     "ref":  "MITRE (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "Sahin \u0026 Daniele (2024)",
+                                                     "type":  "academic",
+                                                     "ref":  "Sahin \u0026 Daniele (2024)"
+                                                 }
+                                             ],
+                                "assumptions":  "Assumes an application without centralised security monitoring. Applications with SIEM and alerting in place would rate 1 on likelihood.",
+                                "status":  "complete"
+                            },
+                            {
+                                "id":  "V12",
+                                "name":  "Server-Side Request Forgery",
+                                "owasp_category":  "A10:2021 Server-Side Request Forgery",
+                                "cwe":  "CWE-918",
+                                "cwe_name":  "Server-Side Request Forgery (SSRF)",
+                                "description":  "The application fetches a remote resource based on a URL supplied or influenced by the user, without restricting the destination. The server is induced to make a request to an internal system that the attacker cannot reach directly.",
+                                "cause":  "User-supplied URL passed to a server-side fetch without an allowlist; no restriction on internal address ranges (127.0.0.1, 169.254.169.254, RFC1918); redirects followed without re-checking destination; response body returned to the user.",
+                                "attack_scenario":  "A feature that previews links accepts any URL. An attacker supplies the cloud metadata endpoint http://169.254.169.254/latest/meta-data/iam/security-credentials/ and receives temporary credentials for the instance\u0027s IAM role, then uses them against the cloud account.",
+                                "cia":  {
+                                            "confidentiality":  {
+                                                                    "level":  "High",
+                                                                    "rationale":  "Internal services and cloud metadata endpoints become readable from the internet-facing application."
+                                                                },
+                                            "integrity":  {
+                                                              "level":  "Medium",
+                                                              "rationale":  "Where internal write APIs are reachable, state can be altered."
+                                                          },
+                                            "availability":  {
+                                                                 "level":  "Medium",
+                                                                 "rationale":  "Requests to internal control-plane endpoints can alter service state."
+                                                             }
+                                        },
+                                "likelihood":  {
+                                                   "score":  3,
+                                                   "justification":  "Requires a feature that fetches a user-influenced URL, which prevents 4. Rated 3 because such features are common (link preview, webhook tester, image import) and require no special privilege beyond authenticated use."
+                                               },
+                                "impact":  {
+                                               "score":  4,
+                                               "justification":  "Read access to internal services and metadata can escalate to cloud account compromise. Rated 4 because full account takeover is a plausible escalation but not the default outcome."
+                                           },
+                                "risk":  {
+                                             "score":  12,
+                                             "band":  "High"
+                                         },
+                                "controls":  {
+                                                 "prevent":  [
+                                                                 "Apply a destination allowlist to any user-influenced server-side fetch",
+                                                                 "Block RFC1918, link-local, loopback and cloud metadata addresses explicitly",
+                                                                 "Resolve DNS before connecting and verify the resolved IP, not only the hostname",
+                                                                 "Do not follow redirects without re-checking the destination",
+                                                                 "Do not return the raw response body to the user; return only a summary"
+                                                             ],
+                                                 "detect":  [
+                                                                {
+                                                                    "ref":  "WSTG-INPV-19",
+                                                                    "label":  "Testing for Server-Side Request Forgery (VERIFY ID)"
+                                                                },
+                                                                "Egress monitoring for requests to internal address ranges from application servers",
+                                                                "Alert on fetches targeting link-local or metadata endpoints"
+                                                            ],
+                                                 "respond":  [
+                                                                 {
+                                                                     "ref":  "RS.MI",
+                                                                     "label":  "Disable the affected feature; rotate instance credentials; audit cloud account activity"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.AN",
+                                                                     "label":  "Determine which internal services were reached and what data returned"
+                                                                 },
+                                                                 {
+                                                                     "ref":  "RS.CO",
+                                                                     "label":  "Notify where data exposure is confirmed"
+                                                                 }
+                                                             ],
+                                                 "verify":  [
+                                                                {
+                                                                    "chapter":  "Validation and Business Logic",
+                                                                    "requirement":  "1.3.6"
+                                                                }
+                                                            ]
+                                             },
+                                "evidence":  [
+                                                 {
+                                                     "source":  "OWASP Server-Side Request Forgery Prevention Cheat Sheet",
+                                                     "type":  "standard",
+                                                     "ref":  "OWASP (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "OWASP Top 10:2021 A10 Server-Side Request Forgery",
+                                                     "type":  "standard",
+                                                     "ref":  "OWASP (2021)"
+                                                 },
+                                                 {
+                                                     "source":  "MITRE CWE-918",
+                                                     "type":  "standard",
+                                                     "ref":  "MITRE (n.d.)"
+                                                 },
+                                                 {
+                                                     "source":  "Al-talak \u0026 Abbass (2021)",
+                                                     "type":  "academic",
+                                                     "ref":  "Al-talak \u0026 Abbass (2021)"
+                                                 }
+                                             ],
+                                "assumptions":  "Assumes an application with a server-side fetch of user-influenced URLs. Applications without such a feature do not carry this vulnerability.",
+                                "status":  "complete"
+                            }
+                        ]
+}
