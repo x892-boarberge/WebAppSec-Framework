@@ -5,19 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WebAppSec Framework</title>
 <style>
-  /* Modern Design System Variables */
+  /* 1.618 Golden Ratio Variables */
   :root {
-    --navy-dark: #0f172a;
-    --navy-light: #1e293b;
-    --primary: #3b82f6;
-    --primary-hover: #2563eb;
-    --bg: #f8fafc;
+    --phi: 1.618;
+    --phi-sq: 2.618;
+    
+    --navy-dark: #0b1120;
+    --navy-mid: #1e293b;
+    --navy-light: #334155;
+    --primary: #38bdf8;
+    --primary-hover: #0ea5e9;
+    --bg: #f1f5f9;
     --surface: #ffffff;
     --text-main: #0f172a;
     --text-muted: #64748b;
-    --border: #e2e8f0;
+    --border: #cbd5e1;
     
-    /* Risk Colors (Soft backgrounds, strong text) */
+    /* Risk Colors */
     --low-bg: #dcfce7; --low-text: #166534;
     --med-bg: #fef9c3; --med-text: #854d0e;
     --high-bg: #fee2e2; --high-text: #991b1b;
@@ -26,8 +30,10 @@
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    
     --radius-md: 0.5rem;
     --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -35,35 +41,61 @@
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
     background-color: var(--bg);
+    /* Golden Ratio background pattern */
+    background-image: 
+      radial-gradient(var(--border) 1px, transparent 1px),
+      radial-gradient(var(--border) 1px, transparent 1px);
+    background-position: 0 0, 10px 10px;
+    background-size: 20px 20px;
     color: var(--text-main);
-    line-height: 1.6;
+    line-height: var(--phi); /* 1.618 line height */
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Header & Navigation */
+  /* Header with Watermark */
   header {
-    background-color: var(--navy-dark);
+    background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-mid) 100%);
     color: white;
-    padding: 1.5rem 2rem;
-    border-bottom: 1px solid var(--navy-light);
+    padding: calc(1rem * var(--phi)) 2rem;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 4px solid var(--primary);
   }
-  header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; margin-bottom: 0.25rem; }
-  header p { color: #94a3b8; font-size: 0.9rem; }
+  
+  /* Watermark Shield SVG */
+  header::after {
+    content: "";
+    position: absolute;
+    right: 5%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 150px;
+    height: 150px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%2338bdf8" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    opacity: 0.15;
+    pointer-events: none;
+  }
+
+  header h1 { font-size: calc(1rem * var(--phi-sq)); font-weight: 800; letter-spacing: -0.025em; margin-bottom: 0.25rem; }
+  header p { color: #94a3b8; font-size: calc(1rem / var(--phi)); max-width: 65%; }
 
   .banner {
-    background-color: #b45309; /* Amber for warning */
+    background-color: #b45309;
     color: white;
     padding: 0.5rem 2rem;
-    font-size: 0.85rem;
-    font-weight: 500;
+    font-size: calc(1rem / var(--phi));
+    font-weight: 600;
     text-align: center;
+    letter-spacing: 0.05em;
   }
 
   nav {
     background-color: var(--navy-light);
     padding: 0 2rem;
     display: flex;
-    gap: 1.5rem;
+    gap: 2rem;
     overflow-x: auto;
     position: sticky;
     top: 0;
@@ -74,8 +106,8 @@
     color: #cbd5e1;
     text-decoration: none;
     padding: 1rem 0.25rem;
-    font-size: 0.95rem;
-    font-weight: 500;
+    font-size: 1rem;
+    font-weight: 600;
     border-bottom: 3px solid transparent;
     transition: all 0.2s ease;
     white-space: nowrap;
@@ -84,101 +116,140 @@
   nav a.active { color: white; border-bottom-color: var(--primary); }
 
   /* Main Content */
-  main { max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; min-height: 60vh; }
-  h2 { font-size: 1.75rem; font-weight: 700; color: var(--navy-dark); margin-bottom: 1rem; }
-  h3 { font-size: 1.25rem; font-weight: 600; color: var(--navy-light); margin: 2rem 0 1rem 0; }
+  main { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; min-height: 60vh; }
+  
+  h2 { font-size: calc(1rem * var(--phi-sq)); font-weight: 800; color: var(--navy-dark); margin-bottom: 0.5rem; }
+  h3 { font-size: calc(1rem * var(--phi)); font-weight: 700; color: var(--navy-mid); margin: 2rem 0 1rem 0; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
 
-  /* Dashboard Cards */
+  /* Dashboard Cards - Clickable */
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.25rem;
+    /* Golden ratio asymmetric split for main dashboard sections */
+    grid-template-columns: 1.618fr 1fr;
+    gap: 1.618rem;
     margin-bottom: 2.5rem;
   }
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.618rem;
+    margin-bottom: 2rem;
+  }
+
   .card {
     background: var(--surface);
-    padding: 1.5rem;
+    padding: 1.618rem;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
-  .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-  .card .num { font-size: 2.25rem; font-weight: 800; margin-bottom: 0.25rem; line-height: 1; }
-  .card .label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
   
-  /* Card left borders for risk levels */
-  .card.band-critical { border-left: 5px solid #991b1b; }
+  /* Clickable Card Styling */
+  .card.clickable {
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .card.clickable:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+  }
+  .card.clickable::after {
+    content: "→";
+    position: absolute;
+    bottom: 1rem;
+    right: 1.5rem;
+    font-size: 1.2rem;
+    color: var(--primary);
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.2s ease;
+  }
+  .card.clickable:hover::after {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .card .num { font-size: calc(1rem * var(--phi-sq)); font-weight: 800; margin-bottom: 0.25rem; line-height: 1; }
+  .card .label { font-size: calc(1rem / var(--phi)); font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  
+  /* Card left borders */
+  .card.band-critical { border-left: 6px solid #991b1b; }
   .card.band-critical .num { color: #991b1b; }
-  .card.band-high { border-left: 5px solid #ef4444; }
+  .card.band-high { border-left: 6px solid #ef4444; }
   .card.band-high .num { color: #ef4444; }
-  .card.band-medium { border-left: 5px solid #f59e0b; }
+  .card.band-medium { border-left: 6px solid #f59e0b; }
   .card.band-medium .num { color: #f59e0b; }
-  .card.band-low { border-left: 5px solid #10b981; }
+  .card.band-low { border-left: 6px solid #10b981; }
   .card.band-low .num { color: #10b981; }
+  .card.band-total { border-left: 6px solid var(--primary); }
+  .card.band-total .num { color: var(--primary); }
 
   /* Tables */
   .table-responsive { overflow-x: auto; background: var(--surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
   table { width: 100%; border-collapse: collapse; text-align: left; }
-  th { background: #f1f5f9; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 1rem; border-bottom: 1px solid var(--border); font-weight: 600; }
+  th { background: #f8fafc; color: var(--text-muted); font-size: calc(1rem / var(--phi-sq)); text-transform: uppercase; letter-spacing: 0.05em; padding: 1rem; border-bottom: 2px solid var(--border); font-weight: 700; }
   td { padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.95rem; color: var(--text-main); vertical-align: top; }
   tbody tr { transition: background 0.15s ease; }
   tbody tr:hover { background: #f8fafc; }
   tr.clickable { cursor: pointer; }
 
   /* Risk Pills */
-  .pill { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.025em; }
+  .pill { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: calc(1rem / var(--phi-sq)); font-weight: 800; letter-spacing: 0.05em; }
   .pill.critical { background: var(--crit-bg); color: var(--crit-text); }
   .pill.high { background: var(--high-bg); color: var(--high-text); }
   .pill.medium { background: var(--med-bg); color: var(--med-text); }
   .pill.low { background: var(--low-bg); color: var(--low-text); }
 
-  /* Controls (Search & Filter) */
+  /* Controls */
   .controls { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
   input[type=search], select {
     padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md);
-    font-size: 0.95rem; font-family: inherit; background: var(--surface); color: var(--text-main);
+    font-size: 1rem; font-family: inherit; background: var(--surface); color: var(--text-main);
     box-shadow: var(--shadow-sm); outline: none; transition: border-color 0.2s, box-shadow 0.2s;
   }
-  input[type=search]:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+  input[type=search]:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.3); }
   input[type=search] { flex: 1; min-width: 250px; }
 
   /* Detail View */
-  .back { display: inline-flex; align-items: center; color: var(--primary); text-decoration: none; font-weight: 500; margin-bottom: 1.5rem; font-size: 0.95rem; }
+  .back { display: inline-flex; align-items: center; color: var(--primary); text-decoration: none; font-weight: 700; margin-bottom: 1.5rem; font-size: 1rem; }
   .back:hover { text-decoration: underline; }
-  .detail-section { background: var(--surface); padding: 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 1.5rem; }
+  .detail-section { background: var(--surface); padding: 1.618rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 1.618rem; }
   .detail-section h3 { margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-bottom: 1rem; }
   .field { margin-bottom: 1.25rem; }
-  .field-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+  .field-label { font-size: calc(1rem / var(--phi-sq)); font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
   
   /* CIA impact */
   .cia-row { display: flex; gap: 1rem; padding: 0.75rem; background: #f8fafc; border-radius: var(--radius-md); margin-bottom: 0.5rem; border: 1px solid var(--border); }
-  .cia-property { font-weight: 700; min-width: 140px; color: var(--navy-dark); }
+  .cia-property { font-weight: 800; min-width: 140px; color: var(--navy-dark); }
   .cia-text { color: var(--text-main); font-size: 0.95rem; }
 
   /* Four-Layer Controls */
   .layer { margin-bottom: 1rem; padding: 1rem; background: #f8fafc; border-radius: var(--radius-md); border-left: 4px solid var(--primary); border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-  .layer h4 { margin: 0 0 0.5rem 0; font-size: 1rem; color: var(--navy-dark); }
+  .layer h4 { margin: 0 0 0.5rem 0; font-size: 1.1rem; color: var(--navy-dark); }
   .layer ul { margin: 0; padding-left: 1.5rem; }
   .layer li { font-size: 0.95rem; margin-bottom: 0.25rem; color: var(--text-main); }
 
-  /* Evidence & Assumptions */
+  /* Evidence */
   .evidence-list { list-style: none; padding: 0; }
   .evidence-list li { padding: 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.95rem; display: flex; gap: 0.75rem; align-items: baseline; }
   .evidence-list li:last-child { border-bottom: none; }
-  .tag-standard { background: #e0e7ff; color: #3730a3; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
-  .tag-academic { background: #fce7f3; color: #9d174d; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+  .tag-standard { background: #e0e7ff; color: #3730a3; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
+  .tag-academic { background: #fce7f3; color: #9d174d; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
   
-  .assumption { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 1rem; font-size: 0.9rem; border-radius: var(--radius-md); color: #78350f; }
+  .assumption { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 1rem; font-size: 0.95rem; border-radius: var(--radius-md); color: #78350f; }
 
-  footer { text-align: center; padding: 3rem 1rem; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid var(--border); background: var(--surface); margin-top: 4rem; }
+  footer { text-align: center; padding: 3rem 1rem; color: var(--text-muted); font-size: calc(1rem / var(--phi)); border-top: 1px solid var(--border); background: var(--navy-dark); color: #94a3b8; margin-top: 4rem; }
   
   .empty { padding: 3rem; text-align: center; color: var(--text-muted); font-size: 1.1rem; background: var(--surface); border-radius: var(--radius-lg); border: 1px dashed var(--border); }
 
   /* Responsive */
   @media (max-width: 768px) {
-    header, nav, main { padding-left: 1rem; padding-right: 1rem; }
     .grid { grid-template-columns: 1fr; }
+    header p { max-width: 100%; }
+    header::after { display: none; }
     .controls { flex-direction: column; }
     .cia-row { flex-direction: column; gap: 0.25rem; }
     .cia-property { min-width: auto; }
@@ -223,7 +294,6 @@ async function loadData() {
       `<div class="empty">
          <h3>Could not load data/vulnerabilities.json</h3>
          <p style="margin-top:1rem;">Error: ${e.message}</p>
-         <p style="margin-top:1rem;">Serve this folder via HTTP:<br><code>python -m http.server 8000</code></p>
        </div>`;
   }
 }
@@ -231,6 +301,14 @@ async function loadData() {
 function route() {
   const hash = (location.hash || '#dashboard').slice(1);
   if (hash.startsWith('detail/')) return renderDetail(hash.slice(7));
+  
+  if (hash.startsWith('register')) {
+      let band = '';
+      if (hash.includes('?band=')) {
+          band = hash.split('?band=')[1];
+      }
+      return renderRegister(band);
+  }
   return render(hash);
 }
 
@@ -246,7 +324,6 @@ function render(view) {
   if (!DATA) return;
   setActive(view);
   const app = document.getElementById('app');
-  if (view === 'register') return renderRegister();
   if (view === 'framework') return renderFramework();
   if (view === 'limitations') return renderLimitations();
   return renderDashboard();
@@ -265,29 +342,32 @@ function renderDashboard() {
 
   document.getElementById('app').innerHTML = `
     <h2>Dashboard</h2>
-    <p style="color:var(--text-muted); margin-bottom: 2rem;">Overview of the 12 assessed vulnerabilities.</p>
+    <p style="color:var(--text-muted); margin-bottom: 2rem;">Overview of the 12 assessed vulnerabilities. Click any metric card to view the filtered register.</p>
     
-    <div class="grid">
-      <div class="card"><p class="num">${vulns.length}</p><p class="label">Total vulnerabilities</p></div>
-      <div class="card band-critical"><p class="num">${bands.Critical}</p><p class="label">Critical Risk</p></div>
-      <div class="card band-high"><p class="num">${bands.High}</p><p class="label">High Risk</p></div>
-      <div class="card band-medium"><p class="num">${bands.Medium}</p><p class="label">Medium Risk</p></div>
-      <div class="card band-low"><p class="num">${bands.Low}</p><p class="label">Low Risk</p></div>
+    <div class="metric-grid">
+      <div class="card clickable band-total" onclick="location.hash='register'">
+        <p class="num">${vulns.length}</p>
+        <p class="label">Total Vulnerabilities</p>
+      </div>
+      <div class="card clickable band-critical" onclick="location.hash='register?band=Critical'">
+        <p class="num">${bands.Critical}</p>
+        <p class="label">Critical Risk</p>
+      </div>
+      <div class="card clickable band-high" onclick="location.hash='register?band=High'">
+        <p class="num">${bands.High}</p>
+        <p class="label">High Risk</p>
+      </div>
+      <div class="card clickable band-medium" onclick="location.hash='register?band=Medium'">
+        <p class="num">${bands.Medium}</p>
+        <p class="label">Medium Risk</p>
+      </div>
+      <div class="card clickable band-low" onclick="location.hash='register?band=Low'">
+        <p class="num">${bands.Low}</p>
+        <p class="label">Low Risk</p>
+      </div>
     </div>
 
-    <div class="grid" style="grid-template-columns: 1fr 1fr; align-items: start;">
-      <div>
-        <h3>Distribution by OWASP Category</h3>
-        <div class="table-responsive">
-          <table>
-            <thead><tr><th>Category</th><th>Count</th></tr></thead>
-            <tbody>
-              ${Object.entries(cats).sort().map(([c,n]) => `<tr><td>${c}</td><td>${n}</td></tr>`).join('')}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      
+    <div class="grid">
       <div>
         <h3>Top Risks by Score</h3>
         <div class="table-responsive">
@@ -303,10 +383,22 @@ function renderDashboard() {
           </table>
         </div>
       </div>
+      
+      <div>
+        <h3>By OWASP Category</h3>
+        <div class="table-responsive">
+          <table>
+            <thead><tr><th>Category</th><th>Count</th></tr></thead>
+            <tbody>
+              ${Object.entries(cats).sort().map(([c,n]) => `<tr><td>${c}</td><td>${n}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>`;
 }
 
-function renderRegister() {
+function renderRegister(preselectedBand = '') {
   document.getElementById('app').innerHTML = `
     <h2>Vulnerability Register</h2>
     <div class="controls">
@@ -317,8 +409,14 @@ function renderRegister() {
       </select>
     </div>
     <div id="register-results"></div>`;
+
+  const select = document.getElementById('band-filter');
+  if (preselectedBand) {
+      select.value = preselectedBand;
+  }
+
   document.getElementById('search').addEventListener('input', filterRegister);
-  document.getElementById('band-filter').addEventListener('change', filterRegister);
+  select.addEventListener('change', filterRegister);
   filterRegister();
 }
 
@@ -369,16 +467,16 @@ function renderDetail(id) {
   document.getElementById('app').innerHTML = `
     <a class="back" href="#register">← Back to register</a>
     
-    <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom: 1rem;">
+    <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
       <div>
         <h2 style="margin-bottom: 0.25rem;">${v.id} — ${v.name}</h2>
-        <p style="color:var(--text-muted); font-weight: 500;">
+        <p style="color:var(--text-muted); font-weight: 600;">
           ${v.owasp_category} · ${v.cwe} <br>
-          <span style="font-size: 0.85rem;">${v.cwe_name}</span>
+          <span style="font-size: 0.85rem; font-weight: 400;">${v.cwe_name}</span>
         </p>
       </div>
-      <div style="text-align: right;">
-        <div style="font-size: 2rem; font-weight: 800; line-height: 1;">${v.risk.score}</div>
+      <div style="text-align: right; background: var(--surface); padding: 1rem; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+        <div style="font-size: 2.5rem; font-weight: 800; line-height: 1; color: var(--navy-dark);">${v.risk.score}</div>
         <span class="pill ${v.risk.band.toLowerCase()}" style="margin-top: 0.5rem;">${v.risk.band} Risk</span>
       </div>
     </div>
@@ -392,7 +490,7 @@ function renderDetail(id) {
       <div class="field"><div class="field-label">Attack Scenario</div><p>${v.attack_scenario}</p></div>
     </div>
 
-    <div class="grid" style="grid-template-columns: 1fr 1fr;">
+    <div class="grid">
       <div class="detail-section">
         <h3>CIA Impact</h3>
         ${['confidentiality','integrity','availability'].map(k => `
@@ -416,7 +514,7 @@ function renderDetail(id) {
     </div>
 
     <h3>Four-Layer Controls</h3>
-    <div class="grid" style="grid-template-columns: 1fr 1fr;">
+    <div class="grid">
       ${layerBlock('Prevent — how do we stop it?', ctl.prevent)}
       ${layerBlock('Detect — how do we know?', ctl.detect, ctl.detect_note)}
       ${layerBlock('Respond — what when found?', ctl.respond)}
@@ -489,7 +587,7 @@ function renderLimitations() {
 
     <div class="detail-section">
       <h3>What it is not</h3>
-      <ul>
+      <ul style="padding-left: 1.5rem;">
         <li>Not a vulnerability scanner</li>
         <li>Not a penetration-testing tool</li>
         <li>Not a commercial security product</li>
@@ -499,7 +597,7 @@ function renderLimitations() {
 
     <div class="detail-section">
       <h3>Assumptions</h3>
-      <ul>
+      <ul style="padding-left: 1.5rem;">
         <li>12 vulnerabilities treated as representative of commonly encountered weaknesses</li>
         <li>Generic application context assumed (public reachability, authenticated user population)</li>
         <li>Likelihood and impact ratings are ordinal judgements, not measured probabilities</li>
