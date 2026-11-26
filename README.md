@@ -6,11 +6,14 @@
 You do not need to install any software to view this project. 
 👉 **[Click here to view the live dashboard](https://x892-boarberge.github.io/WebAppSec-Framework/)**
 
+## ✨ Key Features
+*   **Interactive Dashboard:** Click on any metric (e.g., "Critical Risk") to instantly portal to a filtered register of those specific vulnerabilities.
+*   **Fully Mobile Responsive:** Designed with touch targets, 2x2 metric grids, and horizontally scrolling tables to accommodate iOS and Android devices perfectly.
+*   **Evidence-Based Data:** Every vulnerability is triangulated with OWASP/NIST standards and peer-reviewed academic papers.
+*   **Four-Layer Framework:** Maps each vulnerability to Prevent, Detect, Respond, and Verify controls.
+
 ## Overview
 This repository contains the artefact and research documentation for a BSc (Hons) Cyber Security dissertation. The project investigates common web application vulnerabilities, assesses their risk using a structured 5×5 likelihood-impact matrix, and maps them to a four-layer security improvement framework.
-
-## The Artefact
-The repository includes a static web prototype (/prototype/index.html) that dynamically renders a vulnerability register (/data/vulnerabilities.json). The prototype serves as a decision-support tool, demonstrating how research findings can be visualised and prioritised.
 
 ## Project Structure
 *   data/ - Contains the ulnerabilities.json source of truth (12 assessed vulnerabilities).
@@ -23,8 +26,8 @@ If you wish to run the prototype on your own machine (e.g., to edit the code), y
 
 You must serve the files via a local server:
 1. Open your terminal in the root of this project.
-2. Run: python -m http.server 8000
-3. Open your browser and navigate to: http://localhost:8000/prototype/index.html
+2. Run: \python -m http.server 8000\
+3. Open your browser and navigate to: \http://localhost:8000/prototype/index.html\
 
 ## Framework Overview
 The project utilises a four-layer control mapping model, drawing from industry standards:
